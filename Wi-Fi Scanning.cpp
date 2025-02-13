@@ -25,14 +25,14 @@ int start_packet_capture() {
     }
 
     
-    struct packet_filter compiled_filter; //fp pointer to filter program used by libpcap
+    struct bpf_program compiled_filter; //fp pointer to filter program used by libpcap
     char filter_name[] = "type mgt subtype probe-req";  // name to filter to only allow probe request
     if (pcap_compile(handle, &compiled_filter, filter_name, 0, PCAP_NETMASK_UNKNOWN) == -1) { //pcap_compile function from lib
-        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_name, pcap_geterr(handle));
         return 2;
     }
     if (pcap_setfilter(handle, &compiled_filter) == -1) {
-        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_name, pcap_geterr(handle));
         return 2;
     }
 
