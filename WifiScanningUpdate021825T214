@@ -1,0 +1,56 @@
+#include <pcap.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arpa/inet.h>
+
+#define TARGET_MAC "00:15:5D:96:C0:1C"  // Change this to the MAC you want to track
+
+void packet_handler(unsigned char* user, const struct pcap_pkthdr* header, const unsigned char* packetData) {
+    char mac_addr[18];
+    snprintf(mac_addr, sizeof(mac_addr), "%02X:%02X:%02X:%02X:%02X:%02X",
+        packetData[10], packetData[11], packetData[12],
+        packetData[13], packetData[14], packetData[15]);
+
+    // Check if the detected MAC matches the target
+    if (strcmp(mac_addr, TARGET_MAC) == 0) {
+        printf("Target MAC detected: %s\n", mac_addr);
+    }
+}
+
+int start_packet_capture() {
+    char* dev = "wlan1";  
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t* handle;
+
+    // Open the device for live capture
+    handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
+    if (handle == NULL) {
+        fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
+        return 2;
+    }
+
+    // Apply a filter for probe request frames
+    struct bpf_program compiled_filter;
+    char filter_name[] = "type mgt subtype probe-req";  
+    if (pcap_compile(handle, &compiled_filter, filter_name, 0, PCAP_NETMASK_UNKNOWN) == -1) {
+        fprintf(stderr, "Couldn't parse filter %s: %s\n", filter_name, pcap_geterr(handle));
+        return 2;
+    }
+    if (pcap_setfilter(handle, &compiled_filter) == -1) {
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_name, pcap_geterr(handle));
+        return 2;
+    }
+
+    // Start capturing packets
+    printf("Scanning for Wi-Fi probe requests from %s...\n", TARGET_MAC);
+    pcap_loop(handle, 0, packet_handler, NULL);
+
+    // Close the handle
+    pcap_close(handle);
+    return 0;
+}
+
+int main() {
+    return start_packet_capture();
+}
