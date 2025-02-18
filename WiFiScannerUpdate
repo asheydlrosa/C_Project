@@ -4,7 +4,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#define TARGET_MAC "AA:BB:CC:DD:EE:FF"  // Change this to the MAC you want to track
+#define TARGET_MAC "00:15:5D:96:C0:1C"  // Change this to the MAC you want to track
 
 void packet_handler(unsigned char* user, const struct pcap_pkthdr* header, const unsigned char* packetData) {
     char mac_addr[18];
