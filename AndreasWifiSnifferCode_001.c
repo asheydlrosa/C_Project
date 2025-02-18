@@ -54,7 +54,7 @@ void packet_handler(unsigned char* user, const struct pcap_pkthdr* header, const
 }
 
 int start_packet_capture() {
-    char* dev = "wlan1";  
+    char* dev = "wlan0";  // Change wlan1 to wlan0 
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_t* handle;
 
