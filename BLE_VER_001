@@ -7,6 +7,21 @@
 
 ///ashley
 
+
+//install libpcap for packet capture
+//sudo apt-get install libpcap-dev
+
+//run BLE sniffer in Monitor Mode
+//sudo hciconfig hci0 down
+//sudo hciconfig hci0 monitor
+//sudo hcitool scan
+
+//compile and run
+//gcc ble_apple_sniffer.c -o ble_apple_sniffer -lpcap
+//sudo ./ble_apple_sniffer
+
+
+
 #define APPLE_MANUFACTURER_ID 0x004C  // Apple Inc.
 
 void packet_handler(unsigned char* user, const struct pcap_pkthdr* header, const unsigned char* packetData) {
