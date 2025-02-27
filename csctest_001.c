@@ -24,7 +24,7 @@ Automatically Runs at Boot
 
 #define LOG_FILE "/var/log/captive_portal.log"
 
-struct MHD_Daemon *daemon = NULL; // Global variable to hold the server
+struct MHD_Daemon *server_daemon = NULL; // Renamed from `daemon` to `server_daemon`
 
 // Function to write emergency responses to a log file
 void log_emergency(const char *level, const char *ip) {
@@ -37,11 +37,11 @@ void log_emergency(const char *level, const char *ip) {
     fclose(log);
 }
 
-// Function to handle HTTP requests
-int answer_to_connection(void *cls, struct MHD_Connection *connection,
-                         const char *url, const char *method,
-                         const char *version, const char *upload_data,
-                         size_t *upload_data_size, void **con_cls) {
+// Fixed: Function signature must return `enum MHD_Result`
+enum MHD_Result answer_to_connection(void *cls, struct MHD_Connection *connection,
+                                     const char *url, const char *method,
+                                     const char *version, const char *upload_data,
+                                     size_t *upload_data_size, void **con_cls) {
     struct MHD_Response *response;
     int ret;
 
@@ -69,10 +69,10 @@ int answer_to_connection(void *cls, struct MHD_Connection *connection,
 
 // Function to start the Captive Portal
 void start_server() {
-    if (daemon == NULL) {
-        daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, PORT, NULL, NULL,
-                                  &answer_to_connection, NULL, MHD_OPTION_END);
-        if (daemon == NULL) {
+    if (server_daemon == NULL) {
+        server_daemon = MHD_start_daemon(MHD_USE_SELECT_INTERNALLY, PORT, NULL, NULL,
+                                         &answer_to_connection, NULL, MHD_OPTION_END);
+        if (server_daemon == NULL) {
             printf("Failed to start Captive Portal.\n");
             exit(1);
         }
@@ -84,9 +84,9 @@ void start_server() {
 
 // Function to stop the Captive Portal
 void stop_server() {
-    if (daemon != NULL) {
-        MHD_stop_daemon(daemon);
-        daemon = NULL;
+    if (server_daemon != NULL) {
+        MHD_stop_daemon(server_daemon);
+        server_daemon = NULL;
         printf("Captive Portal has been stopped.\n");
     } else {
         printf("No server is currently running.\n");
